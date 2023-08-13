@@ -11,7 +11,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
-import org.springframework.transaction.TransactionSystemException
 import org.springframework.validation.BindException
 import org.springframework.validation.FieldError
 import org.springframework.validation.ObjectError
@@ -24,8 +23,6 @@ import xyz.makitsystem.sample.demo.common.ApiError
 import xyz.makitsystem.sample.demo.common.ApiErrorCode
 import xyz.makitsystem.sample.demo.common.RequestId
 import xyz.makitsystem.sample.demo.exception.ApiException
-import java.util.stream.Collectors
-
 
 @ControllerAdvice
 class ApiExceptionHandler : ResponseEntityExceptionHandler() {
@@ -79,8 +76,8 @@ class ApiExceptionHandler : ResponseEntityExceptionHandler() {
         ex.bindingResult.globalErrors.stream().forEach { e: ObjectError ->
             details.add(ApiError.Detail(target = e.objectName, message = getMessage(e, request)))
         }
-        ex.bindingResult.fieldErrors.stream().forEach { e: ObjectError ->
-            details.add(ApiError.Detail(target = e.objectName, message = getMessage(e, request)))
+        ex.bindingResult.fieldErrors.stream().forEach { e: FieldError ->
+            details.add(ApiError.Detail(target = e.field, message = getMessage(e, request)))
         }
         val apiError = ApiError(
             code = resolveCode(ex),
@@ -89,37 +86,15 @@ class ApiExceptionHandler : ResponseEntityExceptionHandler() {
         return super.handleExceptionInternal(ex, apiError, headers, status, request)
     }
 
-//    @ExceptionHandler(MethodArgumentNotValidException::class)
-//    fun handleValidationErrors(ex: MethodArgumentNotValidException): ResponseEntity<Map<String, List<String?>>> {
-//        val errors = ex.bindingResult.fieldErrors
-//            .stream().map { obj: FieldError -> obj.defaultMessage }.collect(Collectors.toList())
-//        return ResponseEntity(getErrorsMap(errors), HttpHeaders(), HttpStatus.BAD_REQUEST)
-//    }
-
-//    private fun getErrorsMap(errors: List<String?>): Map<String, List<String?>> {
-//        val errorResponse: MutableMap<String, List<String?>> = HashMap()
-//        errorResponse["errors"] = errors
-//        return errorResponse
-//    }
-
-    @ExceptionHandler(TransactionSystemException::class)
-    fun handleConstraintViolationException(ex: TransactionSystemException): ResponseEntity<ApiError> {
-        val exception = ex.cause?.cause
-        return if (exception is ConstraintViolationException) {
-            val details = exception.constraintViolations.map { item ->
-                ApiError.Detail(target = item.propertyPath.toString(), message = item.message)
-            }
-            val apiError =  ApiError(ApiErrorCode.BAD.value, details)
-            log.warn(WARN_LOG_FORMAT, requestId.id, apiError.toString())
-
-            ResponseEntity(apiError, HttpStatus.BAD_REQUEST)
-        } else {
-            log.error(ERROR_LOG_FORMAT, requestId.id, ex.localizedMessage, ExceptionUtils.getStackTrace(ex))
-
-            ResponseEntity(ApiError(code = ApiErrorCode.INTERNAL_SERVER_ERROR.value, arrayListOf(
-                ApiError.Detail(target = "none", message = ex.localizedMessage)
-            )), HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(ConstraintViolationException::class)
+    fun handleConstraintViolationException(ex: ConstraintViolationException): ResponseEntity<ApiError> {
+        val details = ex.constraintViolations.map { item ->
+            ApiError.Detail(target = item.propertyPath.last().toString(), message = item.message)
         }
+        val apiError = ApiError(ApiErrorCode.BAD.value, details)
+        log.warn(WARN_LOG_FORMAT, requestId.id, apiError.toString())
+
+        return ResponseEntity(apiError, HttpStatus.BAD_REQUEST)
     }
 
     @ExceptionHandler(Exception::class)
@@ -144,14 +119,4 @@ class ApiExceptionHandler : ResponseEntityExceptionHandler() {
 
         return ResponseEntity(exception.apiError, exception.httpStatus)
     }
-
-//    @ExceptionHandler(NoHandlerFoundException::class)
-//    fun handleNoHandlerFoundException(
-//        ex: NoHandlerFoundException?
-//    ): ResponseEntity<ApiError> {
-//        return ResponseEntity(ApiError(
-//            code = ApiErrorCode.NOT_FOUND.value,
-//            details = arrayListOf(ApiError.Detail(target = "none", message = "Not Found"))
-//        ), HttpStatus.NOT_FOUND)
-//    }
 }

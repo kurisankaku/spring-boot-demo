@@ -1,3 +1,10 @@
 package xyz.makitsystem.sample.demo.controller
 
-data class Greeting(var id: Long, var content: String)
+import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.NotBlank
+
+data class Greeting(
+    @field:Min(2)
+    var id: Long,
+    @field:NotBlank
+    var content: String)
