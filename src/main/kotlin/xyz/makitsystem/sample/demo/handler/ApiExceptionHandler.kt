@@ -28,7 +28,7 @@ import java.util.stream.Collectors
 
 
 @ControllerAdvice
-class ApiExceptionHandler {
+class ApiExceptionHandler : ResponseEntityExceptionHandler() {
     companion object {
         private const val ERROR_LOG_FORMAT = "REQUEST_ID:{}\tMESSAGE:{}\tSTACKTRACE:{}"
         private const val WARN_LOG_FORMAT = "REQUEST_ID:{}\tMESSAGE:{}"
@@ -54,53 +54,53 @@ class ApiExceptionHandler {
         return message.getMessage(resolvable, request.locale)
     }
 
-//    override fun handleExceptionInternal(
-//        ex: java.lang.Exception,
-//        body: Any?,
-//        headers: HttpHeaders,
-//        statusCode: HttpStatusCode,
-//        request: WebRequest
-//    ): ResponseEntity<Any>? {
-//        log.error(ERROR_LOG_FORMAT, requestId.id, ex.localizedMessage, ExceptionUtils.getStackTrace(ex))
-//        val apiError = ApiError(
-//            code = resolveCode(ex),
-//            arrayListOf(ApiError.Detail(target = "none", message = ex.localizedMessage))
-//        )
-//        return super.handleExceptionInternal(ex, apiError, headers, statusCode, request)
-//    }
-//
-//    override fun handleMethodArgumentNotValid(
-//        ex: MethodArgumentNotValidException,
-//        headers: HttpHeaders,
-//        status: HttpStatusCode,
-//        request: WebRequest
-//    ): ResponseEntity<Any>? {
-//        val details = mutableListOf<ApiError.Detail>()
-//        ex.bindingResult.globalErrors.stream().forEach { e: ObjectError ->
-//            details.add(ApiError.Detail(target = e.objectName, message = getMessage(e, request)))
-//        }
-//        ex.bindingResult.fieldErrors.stream().forEach { e: ObjectError ->
-//            details.add(ApiError.Detail(target = e.objectName, message = getMessage(e, request)))
-//        }
-//        val apiError = ApiError(
-//            code = resolveCode(ex),
-//            details
-//        )
-//        return super.handleExceptionInternal(ex, apiError, headers, status, request)
-//    }
-
-    @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleValidationErrors(ex: MethodArgumentNotValidException): ResponseEntity<Map<String, List<String?>>> {
-        val errors = ex.bindingResult.fieldErrors
-            .stream().map { obj: FieldError -> obj.defaultMessage }.collect(Collectors.toList())
-        return ResponseEntity(getErrorsMap(errors), HttpHeaders(), HttpStatus.BAD_REQUEST)
+    override fun handleExceptionInternal(
+        ex: java.lang.Exception,
+        body: Any?,
+        headers: HttpHeaders,
+        statusCode: HttpStatusCode,
+        request: WebRequest
+    ): ResponseEntity<Any>? {
+        log.error(ERROR_LOG_FORMAT, requestId.id, ex.localizedMessage, ExceptionUtils.getStackTrace(ex))
+        val apiError = ApiError(
+            code = resolveCode(ex),
+            arrayListOf(ApiError.Detail(target = "none", message = ex.localizedMessage))
+        )
+        return super.handleExceptionInternal(ex, apiError, headers, statusCode, request)
     }
 
-    private fun getErrorsMap(errors: List<String?>): Map<String, List<String?>> {
-        val errorResponse: MutableMap<String, List<String?>> = HashMap()
-        errorResponse["errors"] = errors
-        return errorResponse
+    override fun handleMethodArgumentNotValid(
+        ex: MethodArgumentNotValidException,
+        headers: HttpHeaders,
+        status: HttpStatusCode,
+        request: WebRequest
+    ): ResponseEntity<Any>? {
+        val details = mutableListOf<ApiError.Detail>()
+        ex.bindingResult.globalErrors.stream().forEach { e: ObjectError ->
+            details.add(ApiError.Detail(target = e.objectName, message = getMessage(e, request)))
+        }
+        ex.bindingResult.fieldErrors.stream().forEach { e: ObjectError ->
+            details.add(ApiError.Detail(target = e.objectName, message = getMessage(e, request)))
+        }
+        val apiError = ApiError(
+            code = resolveCode(ex),
+            details
+        )
+        return super.handleExceptionInternal(ex, apiError, headers, status, request)
     }
+
+//    @ExceptionHandler(MethodArgumentNotValidException::class)
+//    fun handleValidationErrors(ex: MethodArgumentNotValidException): ResponseEntity<Map<String, List<String?>>> {
+//        val errors = ex.bindingResult.fieldErrors
+//            .stream().map { obj: FieldError -> obj.defaultMessage }.collect(Collectors.toList())
+//        return ResponseEntity(getErrorsMap(errors), HttpHeaders(), HttpStatus.BAD_REQUEST)
+//    }
+
+//    private fun getErrorsMap(errors: List<String?>): Map<String, List<String?>> {
+//        val errorResponse: MutableMap<String, List<String?>> = HashMap()
+//        errorResponse["errors"] = errors
+//        return errorResponse
+//    }
 
     @ExceptionHandler(TransactionSystemException::class)
     fun handleConstraintViolationException(ex: TransactionSystemException): ResponseEntity<ApiError> {
