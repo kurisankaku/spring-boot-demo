@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import xyz.makitsystem.sample.demo.enums.OsType
 import java.util.concurrent.atomic.AtomicLong
 
 @RestController
@@ -20,7 +21,7 @@ class GreetingController {
     @GetMapping("/greeting")
     fun greeting(@RequestParam(value = "name") @Valid @Email @NotBlank name: String): Greeting {
         println("www")
-        return Greeting(counter.incrementAndGet(), name)
+        return Greeting(counter.incrementAndGet(), name, OsType.ANDROID)
     }
 
     @PostMapping("/greeting")
@@ -31,12 +32,12 @@ class GreetingController {
     @GetMapping("/")
     fun root(@RequestParam(value = "name", defaultValue = "World") name: String): Greeting {
         println("root")
-        return Greeting(0, "root")
+        return Greeting(0, "root", OsType.ANDROID)
     }
 
     @GetMapping("/greeting/hoge")
     fun greetingHote(@RequestParam(value = "name", defaultValue = "World") name: String): Greeting {
         println("hoge")
-        return Greeting(counter.incrementAndGet(), "hoge")
+        return Greeting(counter.incrementAndGet(), "hoge", OsType.ANDROID)
     }
 }

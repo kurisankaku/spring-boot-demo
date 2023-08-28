@@ -17,7 +17,7 @@ import xyz.makitsystem.sample.demo.common.RequestId
 class RequestLogFilter : OncePerRequestFilter() {
     companion object {
         const val REQUEST_LOG_FORMAT = "RequestId:{}\tTYPE:Request\tMETHOD:{}\tURI:{}\tIP:{}\tHEADER:{}"
-        const val RESPONSE_LOG_FORMAT = "RequestId:{}\tTYPE:Response\tMETHOD:{}\tURI:{}\tSTATUS:{}\tIP:{}";
+        const val RESPONSE_LOG_FORMAT = "RequestId:{}\tTYPE:Response\tMETHOD:{}\tURI:{}\tSTATUS:{}\tIP:{}"
     }
 
     val log: Logger = LoggerFactory.getLogger(this.javaClass)
