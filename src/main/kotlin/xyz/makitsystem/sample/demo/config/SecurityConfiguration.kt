@@ -21,11 +21,13 @@ class SecurityConfiguration {
 
     @Bean
     fun securityFilterChain(http: HttpSecurity, authenticationManager: AuthenticationManager): SecurityFilterChain {
-        http.authorizeHttpRequests{
+        http
+            .addFilter(preAuthenticatedProcessingFilter(authenticationManager))
+            .authenticationProvider(preAuthenticatedAuthenticationProvider())
+            .authorizeHttpRequests{
             it.anyRequest().permitAll()
         }
-        http.authenticationProvider(preAuthenticatedAuthenticationProvider())
-        http.addFilter(preAuthenticatedProcessingFilter(authenticationManager))
+
         return http.build()
     }
 
