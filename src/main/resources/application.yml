@@ -9,3 +9,6 @@ spring:
     basename: messages
   mvc:
     log-resolved-exception: false
+logging:
+  level:
+    root: debug
