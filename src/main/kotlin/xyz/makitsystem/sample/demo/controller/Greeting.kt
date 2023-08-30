@@ -11,5 +11,5 @@ data class Greeting(
     @field:NotBlank
     var content: String,
     @field:EnumValidator(enumClazz = OsType::class)
-    var os: OsType,
+    var os: String,
 )

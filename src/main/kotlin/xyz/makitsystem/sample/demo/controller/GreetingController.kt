@@ -21,7 +21,7 @@ class GreetingController {
     @GetMapping("/greeting")
     fun greeting(@RequestParam(value = "name") @Valid @Email @NotBlank name: String): Greeting {
         println("www")
-        return Greeting(counter.incrementAndGet(), name, OsType.ANDROID)
+        return Greeting(counter.incrementAndGet(), name, OsType.ANDROID.toValue())
     }
 
     @PostMapping("/greeting")
@@ -32,12 +32,12 @@ class GreetingController {
     @GetMapping("/")
     fun root(@RequestParam(value = "name", defaultValue = "World") name: String): Greeting {
         println("root")
-        return Greeting(0, "root", OsType.ANDROID)
+        return Greeting(0, "root", OsType.ANDROID.toValue())
     }
 
     @GetMapping("/greeting/hoge")
     fun greetingHote(@RequestParam(value = "name", defaultValue = "World") name: String): Greeting {
         println("hoge")
-        return Greeting(counter.incrementAndGet(), "hoge", OsType.ANDROID)
+        return Greeting(counter.incrementAndGet(), "hoge", OsType.ANDROID.toValue())
     }
 }
