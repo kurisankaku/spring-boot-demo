@@ -26,7 +26,7 @@ class DemoPreAuthenticatedProcessingFilter: AbstractPreAuthenticatedProcessingFi
     }
 
     override fun doFilter(request: ServletRequest?, response: ServletResponse?, chain: FilterChain?) {
-        if (customFilterUrl.matches(request as HttpServletRequest) || errorFilterUrl.matches(request as HttpServletRequest)) {
+        if (customFilterUrl.matches(request as HttpServletRequest) || errorFilterUrl.matches(request)) {
             chain?.doFilter(request, response)
         } else {
             super.doFilter(request, response, chain)
