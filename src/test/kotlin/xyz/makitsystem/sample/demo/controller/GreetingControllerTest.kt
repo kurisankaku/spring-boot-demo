@@ -23,6 +23,6 @@ class GreetingControllerTest {
     fun greetingShouldReturnDefaultMessage() {
         val response = restTemplate.getForEntity("http://localhost:$port/", Greeting::class.java)
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body).isEqualTo(Greeting(0, "root", OsType.ANDROID))
+        assertThat(response.body).isEqualTo(Greeting(0, "root", OsType.ANDROID.toValue()))
     }
 }
